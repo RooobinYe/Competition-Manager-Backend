@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.spring_demo.mapper.TeamMapper">
+    
+    <!-- 初始化表结构 -->
+    <update id="createTeamTable">
+        CREATE TABLE IF NOT EXISTS team (
+            id INT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            com_id INT,
+            captain_id INT,
+            captain_name VARCHAR(255),
+            status INT,
+            create_time DATETIME
+        )
+    </update>
+
+    <update id="createTeamMemberTable">
+        CREATE TABLE IF NOT EXISTS team_member (
+            team_id INT,
+            member_id INT,
+            PRIMARY KEY (team_id, member_id)
+        )
+    </update>
+
+    <update id="createTeamInstructorTable">
+        CREATE TABLE IF NOT EXISTS team_instructor (
+            team_id INT,
+            instructor_id INT,
+            PRIMARY KEY (team_id, instructor_id)
+        )
+    </update>
+
+    <!-- 查询单个团队 -->
+    <select id="findById" resultType="com.demo.spring_demo.model.Team">
+        SELECT * FROM team WHERE id = #{id}
+    </select>
+
+    <!-- 查询所有团队 -->
+    <select id="findAll" resultType="com.demo.spring_demo.model.Team">
+        SELECT * FROM team
+    </select>
+
+    <!-- 插入新团队 -->
+    <insert id="insert" parameterType="com.demo.spring_demo.model.Team">
+        INSERT INTO team (id, name, com_id, captain_id, captain_name, status, create_time)
+        VALUES (#{id}, #{name}, #{comId}, #{captainId}, #{captainName}, #{status}, #{createTime})
+    </insert>
+
+    <!-- 更新团队信息 -->
+    <update id="updateTeam" parameterType="com.demo.spring_demo.model.Team">
+        UPDATE team SET
+            name = #{name},
+            com_id = #{comId},
+            captain_id = #{captainId},
+            captain_name = #{captainName},
+            status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除团队 -->
+    <delete id="deleteById">
+        DELETE FROM team WHERE id = #{id}
+    </delete>
+
+    <!-- 删除团队成员关系 -->
+    <delete id="deleteTeamMembers">
+        DELETE FROM team_member WHERE team_id = #{teamId}
+    </delete>
+
+    <!-- 删除团队指导老师关系 -->
+    <delete id="deleteTeamInstructors">
+        DELETE FROM team_instructor WHERE team_id = #{teamId}
+    </delete>
+
+    <!-- 批量插入团队成员 -->
+    <insert id="insertTeamMembers">
+        INSERT INTO team_member (team_id, member_id) VALUES
+        <foreach collection="memberIds" item="memberId" separator=",">
+            (#{teamId}, #{memberId})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入指导老师 -->
+    <insert id="insertTeamInstructors">
+        INSERT INTO team_instructor (team_id, instructor_id) VALUES
+        <foreach collection="instructorIds" item="instructorId" separator=",">
+            (#{teamId}, #{instructorId})
+        </foreach>
+    </insert>
+
+    <!-- 获取团队成员ID列表 -->
+    <select id="getTeamMemberIds" resultType="java.lang.Long">
+        SELECT member_id FROM team_member WHERE team_id = #{teamId}
+    </select>
+
+    <!-- 获取团队指导老师ID列表 -->
+    <select id="getTeamInstructorIds" resultType="java.lang.Long">
+        SELECT instructor_id FROM team_instructor WHERE team_id = #{teamId}
+    </select>
+
+    <select id="getTeamMemberNames" resultType="string">
+        SELECT GROUP_CONCAT(
+            tm.member_id
+            ORDER BY tm.member_id
+            SEPARATOR ', '
+        ) as memberNames
+        FROM team_member tm
+        WHERE tm.team_id = #{teamId}
+    </select>
+
+    <select id="getTeamInstructorNames" resultType="string">
+        SELECT GROUP_CONCAT(
+            ti.instructor_id
+            ORDER BY ti.instructor_id
+            SEPARATOR ', '
+        ) as instructorNames
+        FROM team_instructor ti
+        WHERE ti.team_id = #{teamId}
+    </select>
+</mapper> 

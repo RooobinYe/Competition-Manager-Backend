@@ -1,22 +1,15 @@
-package com.demo.spring_demo.model;
+package com.demo.spring_demo.model.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.List;
 
-public class Team implements Serializable {
+public class TeamDTO implements Serializable {
     private Integer id;
-    private String name;
     private Integer comId;
+    private String name;
     private Integer captainId;
     private String captainName;
     private Integer status;
-    private List<Integer> memberIds;
-    private List<Integer> instructorIds;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime createTime;
-    private List<Member> members;
     private String memberNames;
     private String instructorNames;
 
@@ -29,20 +22,20 @@ public class Team implements Serializable {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public Integer getComId() {
         return comId;
     }
 
     public void setComId(Integer comId) {
         this.comId = comId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Integer getCaptainId() {
@@ -69,38 +62,6 @@ public class Team implements Serializable {
         this.status = status;
     }
 
-    public List<Integer> getMemberIds() {
-        return memberIds;
-    }
-
-    public void setMemberIds(List<Integer> memberIds) {
-        this.memberIds = memberIds;
-    }
-
-    public List<Integer> getInstructorIds() {
-        return instructorIds;
-    }
-
-    public void setInstructorIds(List<Integer> instructorIds) {
-        this.instructorIds = instructorIds;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-    }
-
-    public List<Member> getMembers() {
-        return members;
-    }
-
-    public void setMembers(List<Member> members) {
-        this.members = members;
-    }
-
     public String getMemberNames() {
         return memberNames;
     }
@@ -116,4 +77,4 @@ public class Team implements Serializable {
     public void setInstructorNames(String instructorNames) {
         this.instructorNames = instructorNames;
     }
-}
+} 
