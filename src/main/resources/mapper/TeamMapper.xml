@@ -90,12 +90,12 @@
     </insert>
 
     <!-- 获取团队成员ID列表 -->
-    <select id="getTeamMemberIds" resultType="java.lang.Long">
+    <select id="getTeamMemberIds" resultType="java.lang.Integer">
         SELECT member_id FROM team_member WHERE team_id = #{teamId}
     </select>
 
     <!-- 获取团队指导老师ID列表 -->
-    <select id="getTeamInstructorIds" resultType="java.lang.Long">
+    <select id="getTeamInstructorIds" resultType="java.lang.Integer">
         SELECT instructor_id FROM team_instructor WHERE team_id = #{teamId}
     </select>
 
@@ -118,4 +118,23 @@
         FROM team_instructor ti
         WHERE ti.team_id = #{teamId}
     </select>
+
+    <!-- 插入单个团队成员关系 -->
+    <insert id="insertTeamMember">
+        INSERT INTO team_member (team_id, member_id) 
+        VALUES (#{teamId}, #{memberId})
+    </insert>
+
+    <!-- 删除单个团队成员关系 -->
+    <delete id="deleteTeamMember">
+        DELETE FROM team_member 
+        WHERE team_id = #{teamId} AND member_id = #{memberId}
+    </delete>
+
+    <!-- 更新团队成员关系 -->
+    <update id="updateTeamMember">
+        UPDATE team_member 
+        SET member_id = #{memberId}
+        WHERE team_id = #{teamId} AND member_id = #{memberId}
+    </update>
 </mapper> 

@@ -3,12 +3,13 @@ package com.demo.spring_demo.controller;
 import com.demo.spring_demo.model.ApiResponse;
 import com.demo.spring_demo.model.Member;
 import com.demo.spring_demo.model.dto.TeamDTO;
+import com.demo.spring_demo.model.dto.MemberResponseDTO;
 import com.demo.spring_demo.service.CaptainService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.demo.spring_demo.mapper.TeamMapper;
 import com.demo.spring_demo.model.Team;
-import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/captain")
@@ -25,9 +26,8 @@ public class CaptainController {
         return captainService.updateTeamInfo(team);
     }
 
-    @PostMapping("/team/{teamID}/member")
-    public ApiResponse<Object> addTeamMember(@PathVariable Integer teamID, @RequestBody Member member) {
-        boolean isSuccess = captainService.addTeamMember(teamID, member);
-        return isSuccess ? ApiResponse.success(new Object()) : ApiResponse.error(1, "Failed to add team member");
+    @GetMapping("/team/{teamId}/member")
+    public ApiResponse<List<MemberResponseDTO>> getTeamMembers(@PathVariable Integer teamId) {
+        return captainService.getTeamMembers(teamId);
     }
 }

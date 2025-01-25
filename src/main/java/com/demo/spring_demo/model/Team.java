@@ -1,6 +1,7 @@
 package com.demo.spring_demo.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,7 +21,6 @@ public class Team implements Serializable {
     private String memberNames;
     private String instructorNames;
 
-    // Getters and Setters
     public Integer getId() {
         return id;
     }

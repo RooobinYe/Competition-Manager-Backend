@@ -1,16 +1,16 @@
 package com.demo.spring_demo.service.impl;
 
-import com.demo.spring_demo.mapper.MemberMapper;
 import com.demo.spring_demo.mapper.TeamMapper;
-import com.demo.spring_demo.model.Member;
 import com.demo.spring_demo.model.Team;
 import com.demo.spring_demo.model.dto.TeamDTO;
 import com.demo.spring_demo.model.ApiResponse;
+import com.demo.spring_demo.model.dto.MemberResponseDTO;
 import com.demo.spring_demo.service.CaptainService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
 
 @Service
 public class CaptainServiceImpl implements CaptainService {
@@ -18,29 +18,23 @@ public class CaptainServiceImpl implements CaptainService {
     @Autowired
     private TeamMapper teamMapper;
 
-    @Autowired
-    private MemberMapper memberMapper;
-
     @Override
     @Transactional
-    public boolean addTeamMember(Integer teamId, Member member) {
+    public boolean addTeamMember(Integer teamId, Integer memberId) {
         // 检查团队是否存在
         Team team = teamMapper.findById(teamId);
         if (team == null) {
             throw new RuntimeException("Team not found");
         }
 
-        // 检查邮箱是否已存在于该团队
-        int count = memberMapper.checkEmailExistsInTeam(teamId, member.getEmail(), null);
-        if (count > 0) {
-            throw new RuntimeException("Email already exists in team");
+        // 检查成员是否已在团队中
+        List<Integer> memberIds = teamMapper.getTeamMemberIds(teamId);
+        if (memberIds.contains(memberId)) {
+            throw new RuntimeException("Member already exists in team");
         }
 
-        // 设置团队ID
-        member.setTeamId(teamId);
-
-        // 插入成员
-        return memberMapper.insert(member) > 0;
+        // 插入团队成员关系
+        return teamMapper.insertTeamMember(teamId, memberId) > 0;
     }
 
     @Override
@@ -100,19 +94,19 @@ public class CaptainServiceImpl implements CaptainService {
             throw new RuntimeException("Team not found");
         }
 
-        // 检查成员是否存在
-        Member member = memberMapper.findById(memberId);
-        if (member == null || !teamId.equals(member.getTeamId())) {
+        // 检查成员是否在团队中
+        List<Integer> memberIds = teamMapper.getTeamMemberIds(teamId);
+        if (!memberIds.contains(memberId)) {
             throw new RuntimeException("Member not found in team");
         }
 
-        // 删除成员
-        return memberMapper.deleteById(memberId) > 0;
+        // 删除团队成员关系
+        return teamMapper.deleteTeamMember(teamId, memberId) > 0;
     }
 
     @Override
     @Transactional
-    public boolean updateTeamMember(Integer teamId, Member member) {
+    public boolean updateTeamMember(Integer teamId, Integer memberId) {
         // 检查团队是否存在
         Team team = teamMapper.findById(teamId);
         if (team == null) {
@@ -120,21 +114,37 @@ public class CaptainServiceImpl implements CaptainService {
         }
 
         // 检查成员是否存在
-        Member existingMember = memberMapper.findById(member.getId());
-        if (existingMember == null || !teamId.equals(existingMember.getTeamId())) {
+        List<Integer> memberIds = teamMapper.getTeamMemberIds(teamId);
+        if (!memberIds.contains(memberId)) {
             throw new RuntimeException("Member not found in team");
         }
 
-        // 检查新邮箱是否与其他成员冲突
-        int count = memberMapper.checkEmailExistsInTeam(teamId, member.getEmail(), member.getId());
-        if (count > 0) {
-            throw new RuntimeException("Email already exists in team");
+        // 更新团队成员
+        return teamMapper.updateTeamMember(teamId, memberId) > 0;
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse<List<MemberResponseDTO>> getTeamMembers(Integer teamId) {
+        try {
+            List<Integer> memberIds = teamMapper.getTeamMemberIds(teamId);
+            if (memberIds.isEmpty()) {
+                return ApiResponse.error(404, "No members found for team");
+            }
+            
+            List<MemberResponseDTO> memberResponseDTOs = new ArrayList<>();
+            for (Integer memberId : memberIds) {
+                MemberResponseDTO memberResponseDTO = new MemberResponseDTO();
+                memberResponseDTO.setStudentId(memberId.toString());
+                // 由于我们只有 memberId，这里需要从其他地方获取 name 和 academy
+                memberResponseDTO.setName("Member " + memberId); // 临时使用 ID 作为名字
+                memberResponseDTO.setAcademy("Unknown");
+                memberResponseDTOs.add(memberResponseDTO);
+            }
+            
+            return ApiResponse.success(memberResponseDTOs);
+        } catch (Exception e) {
+            return ApiResponse.error(500, e.getMessage());
         }
-
-        // 设置团队ID
-        member.setTeamId(teamId);
-
-        // 更新成员信息
-        return memberMapper.update(member) > 0;
     }
 } 
