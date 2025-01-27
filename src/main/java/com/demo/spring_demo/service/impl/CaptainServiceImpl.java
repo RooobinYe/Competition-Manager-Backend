@@ -2,15 +2,21 @@ package com.demo.spring_demo.service.impl;
 
 import com.demo.spring_demo.mapper.TeamMapper;
 import com.demo.spring_demo.model.Team;
-import com.demo.spring_demo.model.dto.TeamDTO;
+import com.demo.spring_demo.model.Member;
+import com.demo.spring_demo.model.Instructor;
+import com.demo.spring_demo.model.dto.captain.UpdateTeamDTO;
 import com.demo.spring_demo.model.ApiResponse;
-import com.demo.spring_demo.model.dto.MemberResponseDTO;
+import com.demo.spring_demo.model.dto.captain.GetMemberDTO;
+import com.demo.spring_demo.model.dto.captain.AddMemberDTO;
 import com.demo.spring_demo.service.CaptainService;
+import com.demo.spring_demo.exception.BusinessException;
+import com.demo.spring_demo.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Service
 public class CaptainServiceImpl implements CaptainService {
@@ -20,131 +26,162 @@ public class CaptainServiceImpl implements CaptainService {
 
     @Override
     @Transactional
-    public boolean addTeamMember(Integer teamId, Integer memberId) {
-        // 检查团队是否存在
-        Team team = teamMapper.findById(teamId);
-        if (team == null) {
-            throw new RuntimeException("Team not found");
+    public ApiResponse<UpdateTeamDTO> updateTeamInfo(Team team) {
+        Team existingTeam = teamMapper.findById(team.getId());
+        boolean isNewTeam = existingTeam == null;
+        
+        // 创建或更新团队基本信息
+        int result;
+        if (isNewTeam) {
+            result = teamMapper.insert(team);
+        } else {
+            result = teamMapper.updateTeam(team);
+        }
+        
+        if (result <= 0) {
+            throw new BusinessException(
+                isNewTeam ? ErrorCode.TEAM_CREATE_FAILED : ErrorCode.TEAM_UPDATE_FAILED
+            );
         }
 
-        // 检查成员是否已在团队中
-        List<Integer> memberIds = teamMapper.getTeamMemberIds(teamId);
-        if (memberIds.contains(memberId)) {
-            throw new RuntimeException("Member already exists in team");
-        }
-
-        // 插入团队成员关系
-        return teamMapper.insertTeamMember(teamId, memberId) > 0;
-    }
-
-    @Override
-    @Transactional
-    public ApiResponse<TeamDTO> updateTeamInfo(Team team) {
-        try {
-            Team existingTeam = teamMapper.findById(team.getId());
-            boolean isNewTeam = existingTeam == null;
-            
-            // 创建或更新团队基本信息
-            int result;
-            if (isNewTeam) {
-                result = teamMapper.insert(team);
-            } else {
-                result = teamMapper.updateTeam(team);
-            }
-            
-            if (result <= 0) {
-                return ApiResponse.error(500, isNewTeam ? "Failed to create team" : "Failed to update team info");
-            }
-
-            // 更新团队成员
+        // 处理成员关系
+        if (team.getMemberIds() != null && !team.getMemberIds().isEmpty()) {
+            // 删除原有成员关系
             teamMapper.deleteTeamMembers(team.getId());
-            if (team.getMemberIds() != null && !team.getMemberIds().isEmpty()) {
-                teamMapper.insertTeamMembers(team.getId(), team.getMemberIds());
+            
+            // 添加新的成员关系
+            for (Integer memberId : team.getMemberIds()) {
+                Member existingMember = teamMapper.findMemberById(memberId);
+                Member member;
+                
+                if (existingMember != null) {
+                    // 如果成员存在，复用现有信息
+                    member = existingMember;
+                } else {
+                    // 如果成员不存在，创建新成员并设置初始值
+                    member = new Member();
+                    member.setId(memberId);
+                    member.setName("待更新"); // 设置初始名字
+                    member.setStudentId("TEMP_" + team.getId() + "_" + memberId); // 使用团队ID和成员ID组合的临时学号
+                    member.setAcademyId(0); // 设置初始学院ID
+                    member.setPhone("未设置"); // 设置初始电话
+                    member.setEmail("未设置"); // 设置初始邮箱
+                }
+                
+                // 设置或更新团队相关信息
+                member.setTeamId(team.getId());
+                member.setIsCaptain(memberId.equals(team.getCaptainId()) ? 1 : 0);
+                teamMapper.insertMember(member);
             }
+        }
 
-            // 更新指导老师
+        // 处理导师关系
+        if (team.getInstructorIds() != null && !team.getInstructorIds().isEmpty()) {
+            // 删除原有导师关系
             teamMapper.deleteTeamInstructors(team.getId());
-            if (team.getInstructorIds() != null && !team.getInstructorIds().isEmpty()) {
-                teamMapper.insertTeamInstructors(team.getId(), team.getInstructorIds());
+            
+            // 添加新的导师关系
+            for (Integer instructorId : team.getInstructorIds()) {
+                Instructor existingInstructor = teamMapper.findInstructorById(instructorId.longValue());
+                Instructor instructor;
+                
+                if (existingInstructor != null) {
+                    // 如果导师存在，复用现有信息
+                    instructor = existingInstructor;
+                } else {
+                    // 如果导师不存在，创建新导师并设置初始值
+                    instructor = new Instructor();
+                    instructor.setId(instructorId.longValue());
+                    instructor.setName("待更新"); // 设置初始名字
+                    instructor.setWorkCode("TEMP_" + team.getId() + "_" + instructorId); // 使用团队ID和导师ID组合的临时工号
+                    instructor.setAcademyID(0L); // 设置初始学院ID
+                    instructor.setPhone("未设置"); // 设置初始电话
+                }
+                
+                // 设置或更新团队相关信息
+                instructor.setTeamID(team.getId().longValue());
+                teamMapper.insertInstructor(instructor);
             }
-
-            // 构建返回数据
-            TeamDTO teamDTO = new TeamDTO();
-            teamDTO.setId(team.getId());
-            teamDTO.setComId(team.getComId());
-            teamDTO.setName(team.getName());
-            teamDTO.setCaptainId(team.getCaptainId());
-            teamDTO.setCaptainName(team.getCaptainName());
-            teamDTO.setStatus(team.getStatus());
-            teamDTO.setMemberNames(teamMapper.getTeamMemberNames(team.getId()));
-            teamDTO.setInstructorNames(teamMapper.getTeamInstructorNames(team.getId()));
-
-            return ApiResponse.success(teamDTO);
-        } catch (Exception e) {
-            return ApiResponse.error(500, e.getMessage());
         }
+
+        // 获取最新的成员和导师名字列表
+        List<Member> members = teamMapper.getTeamMembers(team.getId());
+        String memberNames = members.stream()
+            .map(Member::getName)
+            .collect(Collectors.joining(", "));
+        
+        // 更新团队中的成员名字列表
+        teamMapper.updateTeamMemberNames(team.getId(), memberNames);
+
+        // 构建返回数据
+        UpdateTeamDTO updateTeamDTO = new UpdateTeamDTO();
+        updateTeamDTO.setId(team.getId());
+        updateTeamDTO.setComId(team.getComId());
+        updateTeamDTO.setName(team.getName());
+        updateTeamDTO.setCaptainId(team.getCaptainId());
+        updateTeamDTO.setCaptainName(team.getCaptainName());
+        updateTeamDTO.setStatus(team.getStatus());
+        updateTeamDTO.setMemberNames(memberNames);
+        updateTeamDTO.setInstructorNames(team.getInstructorNames());
+
+        return ApiResponse.success(updateTeamDTO);
     }
 
     @Override
     @Transactional
-    public boolean removeTeamMember(Integer teamId, Integer memberId) {
+    public ApiResponse<List<GetMemberDTO>> getTeamMembers(Integer teamId) {
         // 检查团队是否存在
         Team team = teamMapper.findById(teamId);
         if (team == null) {
-            throw new RuntimeException("Team not found");
+            throw BusinessException.teamNotFound(teamId);
         }
 
-        // 检查成员是否在团队中
-        List<Integer> memberIds = teamMapper.getTeamMemberIds(teamId);
-        if (!memberIds.contains(memberId)) {
-            throw new RuntimeException("Member not found in team");
+        // 直接从member表获取成员列表
+        List<Member> members = teamMapper.getTeamMembers(teamId);
+        if (members.isEmpty()) {
+            return ApiResponse.error(404, "No members found for team");
         }
-
-        // 删除团队成员关系
-        return teamMapper.deleteTeamMember(teamId, memberId) > 0;
+        
+        // 转换为DTO
+        List<GetMemberDTO> memberDTOs = members.stream()
+            .map(member -> {
+                GetMemberDTO dto = new GetMemberDTO();
+                dto.setStudentId(member.getStudentId());
+                dto.setName(member.getName());
+                // TODO: 需要从Academy服务获取学院名称
+                dto.setAcademy("Unknown");
+                return dto;
+            })
+            .collect(Collectors.toList());
+        
+        return ApiResponse.success(memberDTOs);
     }
 
     @Override
     @Transactional
-    public boolean updateTeamMember(Integer teamId, Integer memberId) {
+    public ApiResponse<Void> addTeamMember(Integer teamId, Member member) {
         // 检查团队是否存在
         Team team = teamMapper.findById(teamId);
         if (team == null) {
-            throw new RuntimeException("Team not found");
+            throw BusinessException.teamNotFound(teamId);
         }
 
-        // 检查成员是否存在
-        List<Integer> memberIds = teamMapper.getTeamMemberIds(teamId);
-        if (!memberIds.contains(memberId)) {
-            throw new RuntimeException("Member not found in team");
+        // 设置团队ID
+        member.setTeamId(teamId);
+        
+        // 插入成员
+        int result = teamMapper.insertMember(member);
+        if (result <= 0) {
+            throw new BusinessException(ErrorCode.MEMBER_CREATE_FAILED);
         }
 
-        // 更新团队成员
-        return teamMapper.updateTeamMember(teamId, memberId) > 0;
-    }
+        // 更新团队的成员名字列表
+        List<Member> members = teamMapper.getTeamMembers(teamId);
+        String memberNames = members.stream()
+            .map(Member::getName)
+            .collect(Collectors.joining(", "));
+        teamMapper.updateTeamMemberNames(teamId, memberNames);
 
-    @Override
-    @Transactional
-    public ApiResponse<List<MemberResponseDTO>> getTeamMembers(Integer teamId) {
-        try {
-            List<Integer> memberIds = teamMapper.getTeamMemberIds(teamId);
-            if (memberIds.isEmpty()) {
-                return ApiResponse.error(404, "No members found for team");
-            }
-            
-            List<MemberResponseDTO> memberResponseDTOs = new ArrayList<>();
-            for (Integer memberId : memberIds) {
-                MemberResponseDTO memberResponseDTO = new MemberResponseDTO();
-                memberResponseDTO.setStudentId(memberId.toString());
-                // 由于我们只有 memberId，这里需要从其他地方获取 name 和 academy
-                memberResponseDTO.setName("Member " + memberId); // 临时使用 ID 作为名字
-                memberResponseDTO.setAcademy("Unknown");
-                memberResponseDTOs.add(memberResponseDTO);
-            }
-            
-            return ApiResponse.success(memberResponseDTOs);
-        } catch (Exception e) {
-            return ApiResponse.error(500, e.getMessage());
-        }
+        return ApiResponse.success(null);
     }
 } 

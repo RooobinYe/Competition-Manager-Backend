@@ -3,72 +3,32 @@ package com.demo.spring_demo.mapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import com.demo.spring_demo.model.Team;
+import com.demo.spring_demo.model.Member;
+import com.demo.spring_demo.model.Instructor;
 import java.util.List;
 
 @Mapper
 public interface TeamMapper {
-    // 初始化表结构
-    int createTeamTable();
-    int createTeamMemberTable();
-    int createTeamInstructorTable();
-    
+    // 查询团队
     Team findById(Integer id);
-    
     List<Team> findAll();
-    
+
+    // 团队基本操作
     int insert(Team team);
-    
     int updateTeam(Team team);
-    
     int deleteById(Integer id);
-    
+
+    // 成员相关操作
+    List<Member> getTeamMembers(@Param("teamId") Integer teamId);
+    int updateTeamMemberNames(@Param("teamId") Integer teamId, @Param("memberNames") String memberNames);
+    int insertMember(Member member);
     int deleteTeamMembers(@Param("teamId") Integer teamId);
+    Member findMemberById(@Param("id") Integer id);
     
+    // 导师相关操作
+    List<Instructor> getTeamInstructors(@Param("teamId") Integer teamId);
+    int updateTeamInstructorNames(@Param("teamId") Integer teamId, @Param("instructorNames") String instructorNames);
+    int insertInstructor(Instructor instructor);
     int deleteTeamInstructors(@Param("teamId") Integer teamId);
-    
-    int insertTeamMembers(@Param("teamId") Integer teamId, @Param("memberIds") List<Integer> memberIds);
-    
-    int insertTeamInstructors(@Param("teamId") Integer teamId, @Param("instructorIds") List<Integer> instructorIds);
-    
-    /**
-     * 获取团队成员ID列表
-     * @param teamId 团队ID
-     * @return 成员ID列表
-     */
-    List<Integer> getTeamMemberIds(@Param("teamId") Integer teamId);
-    
-    /**
-     * 获取团队指导老师ID列表
-     * @param teamId 团队ID
-     * @return 指导老师ID列表
-     */
-    List<Integer> getTeamInstructorIds(@Param("teamId") Integer teamId);
-
-    String getTeamMemberNames(@Param("teamId") Integer teamId);
-
-    String getTeamInstructorNames(@Param("teamId") Integer teamId);
-
-    /**
-     * 插入单个团队成员关系
-     * @param teamId 团队ID
-     * @param memberId 成员ID
-     * @return 影响的行数
-     */
-    int insertTeamMember(Integer teamId, Integer memberId);
-
-    /**
-     * 删除团队成员关系
-     * @param teamId 团队ID
-     * @param memberId 成员ID
-     * @return 影响的行数
-     */
-    int deleteTeamMember(@Param("teamId") Integer teamId, @Param("memberId") Integer memberId);
-
-    /**
-     * 更新团队成员关系
-     * @param teamId 团队ID
-     * @param memberId 成员ID
-     * @return 影响的行数
-     */
-    int updateTeamMember(@Param("teamId") Integer teamId, @Param("memberId") Integer memberId);
-} 
+    Instructor findInstructorById(@Param("id") Long id);
+}

@@ -1,6 +1,8 @@
-package com.demo.spring_demo.model.dto;
+package com.demo.spring_demo.model.dto.captain;
 
-public class MemberResponseDTO {
+import java.io.Serializable;
+
+public class GetMemberDTO implements Serializable {
     private String studentId;
     private String name;
     private String academy;

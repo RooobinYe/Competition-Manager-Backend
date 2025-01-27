@@ -1,15 +1,15 @@
-package com.demo.spring_demo.model;
+package com.demo.spring_demo.model.dto.captain;
 
-public class Member {
-    private Integer id; // 不是学号
+import java.io.Serializable;
+
+public class AddMemberDTO implements Serializable {
+    private Integer id;
     private String name;
-    private String studentId; // 学号
+    private Integer studentId;
     private Integer teamId;
     private Integer academyId;
     private String phone;
     private Integer isCaptain;
-    private String email;
-    private Team team;
 
     public Integer getId() {
         return id;
@@ -27,11 +27,11 @@ public class Member {
         this.name = name;
     }
 
-    public String getStudentId() {
+    public Integer getStudentId() {
         return studentId;
     }
 
-    public void setStudentId(String studentId) {
+    public void setStudentId(Integer studentId) {
         this.studentId = studentId;
     }
 
@@ -65,21 +65,5 @@ public class Member {
 
     public void setIsCaptain(Integer isCaptain) {
         this.isCaptain = isCaptain;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public Team getTeam() {
-        return team;
-    }
-
-    public void setTeam(Team team) {
-        this.team = team;
     }
 }
