@@ -3,7 +3,6 @@ package com.demo.spring_demo.controller;
 import com.demo.spring_demo.model.ApiResponse;
 import com.demo.spring_demo.model.dto.captain.UpdateTeamDTO;
 import com.demo.spring_demo.model.dto.captain.GetMemberDTO;
-import com.demo.spring_demo.model.dto.captain.AddMemberDTO;
 import com.demo.spring_demo.service.CaptainService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

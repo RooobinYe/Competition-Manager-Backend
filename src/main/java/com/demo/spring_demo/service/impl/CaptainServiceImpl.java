@@ -1,6 +1,10 @@
 package com.demo.spring_demo.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.demo.spring_demo.mapper.TeamMapper;
+import com.demo.spring_demo.mapper.MemberMapper;
+import com.demo.spring_demo.mapper.InstructorMapper;
 import com.demo.spring_demo.model.Team;
 import com.demo.spring_demo.model.Member;
 import com.demo.spring_demo.model.Instructor;
@@ -23,97 +27,96 @@ public class CaptainServiceImpl implements CaptainService {
 
     @Autowired
     private TeamMapper teamMapper;
+    
+    @Autowired
+    private MemberMapper memberMapper;
+    
+    @Autowired
+    private InstructorMapper instructorMapper;
 
     @Override
     @Transactional
     public ApiResponse<UpdateTeamDTO> updateTeamInfo(Team team) {
-        Team existingTeam = teamMapper.findById(team.getId());
+        Team existingTeam = teamMapper.selectById(team.getId());
         boolean isNewTeam = existingTeam == null;
         
-        // 创建或更新团队基本信息
-        int result;
+        boolean result;
         if (isNewTeam) {
-            result = teamMapper.insert(team);
+            result = teamMapper.insert(team) > 0;
         } else {
-            result = teamMapper.updateTeam(team);
+            result = teamMapper.updateById(team) > 0;
         }
         
-        if (result <= 0) {
+        if (!result) {
             throw new BusinessException(
                 isNewTeam ? ErrorCode.TEAM_CREATE_FAILED : ErrorCode.TEAM_UPDATE_FAILED
             );
         }
 
-        // 处理成员关系
         if (team.getMemberIds() != null && !team.getMemberIds().isEmpty()) {
-            // 删除原有成员关系
-            teamMapper.deleteTeamMembers(team.getId());
+            LambdaQueryWrapper<Member> memberWrapper = new LambdaQueryWrapper<>();
+            memberWrapper.eq(Member::getTeamId, team.getId());
+            memberMapper.delete(memberWrapper);
             
-            // 添加新的成员关系
             for (Integer memberId : team.getMemberIds()) {
-                Member existingMember = teamMapper.findMemberById(memberId);
+                Member existingMember = memberMapper.selectById(memberId);
                 Member member;
                 
                 if (existingMember != null) {
-                    // 如果成员存在，复用现有信息
                     member = existingMember;
                 } else {
-                    // 如果成员不存在，创建新成员并设置初始值
                     member = new Member();
                     member.setId(memberId);
-                    member.setName("待更新"); // 设置初始名字
-                    member.setStudentId("TEMP_" + team.getId() + "_" + memberId); // 使用团队ID和成员ID组合的临时学号
-                    member.setAcademyId(0); // 设置初始学院ID
-                    member.setPhone("未设置"); // 设置初始电话
-                    member.setEmail("未设置"); // 设置初始邮箱
+                    member.setName("待更新");
+                    member.setStudentId("TEMP_" + team.getId() + "_" + memberId);
+                    member.setAcademyId(0);
+                    member.setPhone("未设置");
+                    member.setEmail("未设置");
                 }
                 
-                // 设置或更新团队相关信息
                 member.setTeamId(team.getId());
                 member.setIsCaptain(memberId.equals(team.getCaptainId()) ? 1 : 0);
-                teamMapper.insertMember(member);
+                memberMapper.insert(member);
             }
         }
 
-        // 处理导师关系
         if (team.getInstructorIds() != null && !team.getInstructorIds().isEmpty()) {
-            // 删除原有导师关系
-            teamMapper.deleteTeamInstructors(team.getId());
+            LambdaQueryWrapper<Instructor> instructorWrapper = new LambdaQueryWrapper<>();
+            instructorWrapper.eq(Instructor::getTeamId, team.getId());
+            instructorMapper.delete(instructorWrapper);
             
-            // 添加新的导师关系
             for (Integer instructorId : team.getInstructorIds()) {
-                Instructor existingInstructor = teamMapper.findInstructorById(instructorId.longValue());
+                Instructor existingInstructor = instructorMapper.selectById(instructorId.longValue());
                 Instructor instructor;
                 
                 if (existingInstructor != null) {
-                    // 如果导师存在，复用现有信息
                     instructor = existingInstructor;
                 } else {
-                    // 如果导师不存在，创建新导师并设置初始值
                     instructor = new Instructor();
                     instructor.setId(instructorId.longValue());
-                    instructor.setName("待更新"); // 设置初始名字
-                    instructor.setWorkCode("TEMP_" + team.getId() + "_" + instructorId); // 使用团队ID和导师ID组合的临时工号
-                    instructor.setAcademyID(0L); // 设置初始学院ID
-                    instructor.setPhone("未设置"); // 设置初始电话
+                    instructor.setName("待更新");
+                    instructor.setWorkCode("TEMP_" + team.getId() + "_" + instructorId);
+                    instructor.setAcademyId(0L);
+                    instructor.setPhone("未设置");
                 }
                 
-                // 设置或更新团队相关信息
-                instructor.setTeamID(team.getId().longValue());
-                teamMapper.insertInstructor(instructor);
+                instructor.setTeamId(team.getId().longValue());
+                instructorMapper.insert(instructor);
             }
         }
 
-        // 获取最新的成员和导师名字列表
-        List<Member> members = teamMapper.getTeamMembers(team.getId());
+        LambdaQueryWrapper<Member> memberQueryWrapper = new LambdaQueryWrapper<>();
+        memberQueryWrapper.eq(Member::getTeamId, team.getId());
+        List<Member> members = memberMapper.selectList(memberQueryWrapper);
         String memberNames = members.stream()
             .map(Member::getName)
             .collect(Collectors.joining(", "));
         
-        // 更新团队中的成员名字列表
-        teamMapper.updateTeamMemberNames(team.getId(), memberNames);
+        LambdaUpdateWrapper<Team> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Team::getId, team.getId())
+                    .set(Team::getMemberNames, memberNames);
+        teamMapper.update(null, updateWrapper);
 
-        // 构建返回数据
         UpdateTeamDTO updateTeamDTO = new UpdateTeamDTO();
         updateTeamDTO.setId(team.getId());
         updateTeamDTO.setComId(team.getComId());
@@ -130,25 +133,24 @@ public class CaptainServiceImpl implements CaptainService {
     @Override
     @Transactional
     public ApiResponse<List<GetMemberDTO>> getTeamMembers(Integer teamId) {
-        // 检查团队是否存在
-        Team team = teamMapper.findById(teamId);
+        Team team = teamMapper.selectById(teamId);
         if (team == null) {
             throw BusinessException.teamNotFound(teamId);
         }
 
-        // 直接从member表获取成员列表
-        List<Member> members = teamMapper.getTeamMembers(teamId);
+        LambdaQueryWrapper<Member> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Member::getTeamId, teamId);
+        List<Member> members = memberMapper.selectList(wrapper);
+        
         if (members.isEmpty()) {
             return ApiResponse.error(404, "No members found for team");
         }
         
-        // 转换为DTO
         List<GetMemberDTO> memberDTOs = members.stream()
             .map(member -> {
                 GetMemberDTO dto = new GetMemberDTO();
                 dto.setStudentId(member.getStudentId());
                 dto.setName(member.getName());
-                // TODO: 需要从Academy服务获取学院名称
                 dto.setAcademy("Unknown");
                 return dto;
             })
@@ -160,27 +162,29 @@ public class CaptainServiceImpl implements CaptainService {
     @Override
     @Transactional
     public ApiResponse<Void> addTeamMember(Integer teamId, Member member) {
-        // 检查团队是否存在
-        Team team = teamMapper.findById(teamId);
+        Team team = teamMapper.selectById(teamId);
         if (team == null) {
             throw BusinessException.teamNotFound(teamId);
         }
 
-        // 设置团队ID
         member.setTeamId(teamId);
+        boolean result = memberMapper.insert(member) > 0;
         
-        // 插入成员
-        int result = teamMapper.insertMember(member);
-        if (result <= 0) {
+        if (!result) {
             throw new BusinessException(ErrorCode.MEMBER_CREATE_FAILED);
         }
 
-        // 更新团队的成员名字列表
-        List<Member> members = teamMapper.getTeamMembers(teamId);
+        LambdaQueryWrapper<Member> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Member::getTeamId, teamId);
+        List<Member> members = memberMapper.selectList(wrapper);
         String memberNames = members.stream()
             .map(Member::getName)
             .collect(Collectors.joining(", "));
-        teamMapper.updateTeamMemberNames(teamId, memberNames);
+            
+        LambdaUpdateWrapper<Team> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Team::getId, teamId)
+                    .set(Team::getMemberNames, memberNames);
+        teamMapper.update(null, updateWrapper);
 
         return ApiResponse.success(null);
     }

@@ -1,6 +1,13 @@
 package com.demo.spring_demo.model;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+
+@TableName("member")
 public class Member {
+    @TableId(type = IdType.AUTO)
     private Integer id; // 不是学号
     private String name;
     private String studentId; // 学号
@@ -9,6 +16,8 @@ public class Member {
     private String phone;
     private Integer isCaptain;
     private String email;
+    
+    @TableField(exist = false)
     private Team team;
 
     public Integer getId() {

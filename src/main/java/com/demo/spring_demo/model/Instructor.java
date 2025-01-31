@@ -1,11 +1,22 @@
 package com.demo.spring_demo.model;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+
+@TableName("instructor")
 public class Instructor {
+    @TableId(type = IdType.AUTO)
     private Long id;
     private String name;
     private String workCode; // 工号
-    private Long teamID;
-    private Long academyID;
+    
+    @TableField("team_id")
+    private Long teamId;
+    
+    @TableField("academy_id")
+    private Long academyId;
     private String phone;
 
     public Long getId() {
@@ -32,20 +43,20 @@ public class Instructor {
         this.workCode = workCode;
     }
 
-    public Long getTeamID() {
-        return teamID;
+    public Long getTeamId() {
+        return teamId;
     }
 
-    public void setTeamID(Long teamID) {
-        this.teamID = teamID;
+    public void setTeamId(Long teamId) {
+        this.teamId = teamId;
     }
 
-    public Long getAcademyID() {
-        return academyID;
+    public Long getAcademyId() {
+        return academyId;
     }
 
-    public void setAcademyID(Long academyID) {
-        this.academyID = academyID;
+    public void setAcademyId(Long academyId) {
+        this.academyId = academyId;
     }
 
     public String getPhone() {
