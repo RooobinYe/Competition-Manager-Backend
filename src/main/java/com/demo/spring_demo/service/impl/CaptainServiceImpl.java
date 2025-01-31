@@ -8,10 +8,9 @@ import com.demo.spring_demo.mapper.InstructorMapper;
 import com.demo.spring_demo.model.Team;
 import com.demo.spring_demo.model.Member;
 import com.demo.spring_demo.model.Instructor;
-import com.demo.spring_demo.model.dto.captain.UpdateTeamDTO;
+import com.demo.spring_demo.model.dto.captain.TeamDTO;
 import com.demo.spring_demo.model.ApiResponse;
 import com.demo.spring_demo.model.dto.captain.GetMemberDTO;
-import com.demo.spring_demo.model.dto.captain.AddMemberDTO;
 import com.demo.spring_demo.service.CaptainService;
 import com.demo.spring_demo.exception.BusinessException;
 import com.demo.spring_demo.exception.ErrorCode;
@@ -19,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,7 +34,7 @@ public class CaptainServiceImpl implements CaptainService {
 
     @Override
     @Transactional
-    public ApiResponse<UpdateTeamDTO> updateTeamInfo(Team team) {
+    public ApiResponse<TeamDTO> updateTeamInfo(Team team) {
         Team existingTeam = teamMapper.selectById(team.getId());
         boolean isNewTeam = existingTeam == null;
         
@@ -117,17 +115,17 @@ public class CaptainServiceImpl implements CaptainService {
                     .set(Team::getMemberNames, memberNames);
         teamMapper.update(null, updateWrapper);
 
-        UpdateTeamDTO updateTeamDTO = new UpdateTeamDTO();
-        updateTeamDTO.setId(team.getId());
-        updateTeamDTO.setComId(team.getComId());
-        updateTeamDTO.setName(team.getName());
-        updateTeamDTO.setCaptainId(team.getCaptainId());
-        updateTeamDTO.setCaptainName(team.getCaptainName());
-        updateTeamDTO.setStatus(team.getStatus());
-        updateTeamDTO.setMemberNames(memberNames);
-        updateTeamDTO.setInstructorNames(team.getInstructorNames());
+        TeamDTO teamDTO = new TeamDTO();
+        teamDTO.setId(team.getId());
+        teamDTO.setComId(team.getComId());
+        teamDTO.setName(team.getName());
+        teamDTO.setCaptainId(team.getCaptainId());
+        teamDTO.setCaptainName(team.getCaptainName());
+        teamDTO.setStatus(team.getStatus());
+        teamDTO.setMemberNames(memberNames);
+        teamDTO.setInstructorNames(team.getInstructorNames());
 
-        return ApiResponse.success(updateTeamDTO);
+        return ApiResponse.success(teamDTO);
     }
 
     @Override
@@ -169,7 +167,7 @@ public class CaptainServiceImpl implements CaptainService {
 
         member.setTeamId(teamId);
         boolean result = memberMapper.insert(member) > 0;
-        
+
         if (!result) {
             throw new BusinessException(ErrorCode.MEMBER_CREATE_FAILED);
         }
@@ -178,14 +176,54 @@ public class CaptainServiceImpl implements CaptainService {
         wrapper.eq(Member::getTeamId, teamId);
         List<Member> members = memberMapper.selectList(wrapper);
         String memberNames = members.stream()
-            .map(Member::getName)
-            .collect(Collectors.joining(", "));
-            
+                .map(Member::getName)
+                .collect(Collectors.joining(", "));
+
         LambdaUpdateWrapper<Team> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Team::getId, teamId)
-                    .set(Team::getMemberNames, memberNames);
+                .set(Team::getMemberNames, memberNames);
         teamMapper.update(null, updateWrapper);
 
         return ApiResponse.success(null);
     }
+    
+    @Override
+    @Transactional
+    public ApiResponse<List<TeamDTO>> getTeamList() {
+        List<Team> teams = teamMapper.selectList(null);
+        
+        List<TeamDTO> teamDTOs = teams.stream()
+            .map(team -> {
+                TeamDTO teamDTO = new TeamDTO();
+                teamDTO.setId(team.getId());
+                teamDTO.setComId(team.getComId());
+                teamDTO.setName(team.getName());
+                teamDTO.setCaptainId(team.getCaptainId());
+                teamDTO.setCaptainName(team.getCaptainName());
+                teamDTO.setStatus(team.getStatus());
+                teamDTO.setMemberNames(team.getMemberNames());
+                teamDTO.setInstructorNames(team.getInstructorNames());
+                return teamDTO;
+            })
+            .collect(Collectors.toList());
+            /**
+             * 上方是使用流式的方式 等价于
+             * List<TeamDTO> teamDTOs = new ArrayList<>();
+             * for (Team team : teams) {
+             *     TeamDTO dto = new TeamDTO();
+             *     dto.setId(team.getId());
+             *     dto.setComId(team.getComId());
+             *     dto.setName(team.getName());
+             *     dto.setCaptainId(team.getCaptainId());
+             *     dto.setCaptainName(team.getCaptainName());
+             *     dto.setStatus(team.getStatus());
+             *     dto.setMemberNames(team.getMemberNames());
+             *     dto.setInstructorNames(team.getInstructorNames());
+             *     teamDTOs.add(dto);
+             * }
+             */
+            
+        return ApiResponse.success(teamDTOs);
+    }
 } 
+

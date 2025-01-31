@@ -2,7 +2,11 @@ package com.demo.spring_demo.model.dto.captain;
 
 import java.io.Serializable;
 
-public class UpdateTeamDTO implements Serializable {
+/**
+ * POST /captain/team Update Team Info
+ * GET /captain/team Get Team Info
+ */
+public class TeamDTO implements Serializable {
     private Integer id;
     private Integer comId;
     private String name;

@@ -2,7 +2,7 @@ package com.demo.spring_demo.service;
 
 import com.demo.spring_demo.model.Team;
 import com.demo.spring_demo.model.Member;
-import com.demo.spring_demo.model.dto.captain.UpdateTeamDTO;
+import com.demo.spring_demo.model.dto.captain.TeamDTO;
 import com.demo.spring_demo.model.dto.captain.GetMemberDTO;
 import com.demo.spring_demo.model.ApiResponse;
 import java.util.List;
@@ -14,7 +14,7 @@ public interface CaptainService {
      * @param team 团队信息
      * @return 更新后的团队信息
      */
-    ApiResponse<UpdateTeamDTO> updateTeamInfo(Team team);
+    ApiResponse<TeamDTO> updateTeamInfo(Team team);
 
     /**
      * 获取团队成员
@@ -31,4 +31,9 @@ public interface CaptainService {
      */
     ApiResponse<Void> addTeamMember(Integer teamId, Member member);
 
+    /**
+     * 获取团队列表
+     * @return 团队列表
+     */
+    ApiResponse<List<TeamDTO>> getTeamList();
 }

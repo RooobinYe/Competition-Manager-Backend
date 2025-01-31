@@ -1,7 +1,7 @@
 package com.demo.spring_demo.controller;
 
 import com.demo.spring_demo.model.ApiResponse;
-import com.demo.spring_demo.model.dto.captain.UpdateTeamDTO;
+import com.demo.spring_demo.model.dto.captain.TeamDTO;
 import com.demo.spring_demo.model.dto.captain.GetMemberDTO;
 import com.demo.spring_demo.service.CaptainService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ public class CaptainController {
     private CaptainService captainService;
 
     @PostMapping("/team")
-    public ApiResponse<UpdateTeamDTO> updateTeamInfo(@RequestBody Team team) {
+    public ApiResponse<TeamDTO> updateTeamInfo(@RequestBody Team team) {
         return captainService.updateTeamInfo(team);
     }
 
@@ -32,4 +32,8 @@ public class CaptainController {
         return captainService.addTeamMember(teamId, member);
     }
 
+    @GetMapping("/team")
+    public ApiResponse<List<TeamDTO>> getTeamList() {
+        return captainService.getTeamList();
+    }
 }
