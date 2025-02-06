@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.spring_demo.mapper.UserMapper">
+    <!-- 根据userCode查询用户 -->
+    <select id="findByUserCode" resultType="com.demo.spring_demo.model.User">
+        SELECT * FROM user WHERE user_code = #{userCode}
+    </select>
+</mapper> 

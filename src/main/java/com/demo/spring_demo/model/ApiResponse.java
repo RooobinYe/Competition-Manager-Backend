@@ -2,13 +2,14 @@ package com.demo.spring_demo.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import java.time.LocalDateTime;
 
 @JsonPropertyOrder({
-    "success",
-    "errCode",
-    "errMsg",
-    "data"
+        "success",
+        "errCode",
+        "errMsg",
+        "data"
 })
 public class ApiResponse<T> {
     private boolean success;

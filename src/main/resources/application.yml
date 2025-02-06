@@ -2,7 +2,7 @@ spring:
   application:
     name: spring_demo
   datasource:
-    url: jdbc:mysql://localhost:3306/spring_demo?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/spring_demo?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: root
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -11,12 +11,18 @@ spring:
       mode: always
       schema-locations: classpath:db/schema.sql
       continue-on-error: true
+  jpa:
+    show-sql: true
+logging:
+  level:
+    org.springframework.jdbc.datasource.init: DEBUG
 
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.demo.spring_demo.model
 
 server:
-  port: 8080 
+  port: 8080

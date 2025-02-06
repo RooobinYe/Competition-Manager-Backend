@@ -31,3 +31,12 @@ CREATE TABLE IF NOT EXISTS instructor (
     phone VARCHAR(20),
     FOREIGN KEY (team_id) REFERENCES team(id)
 ); 
+
+CREATE TABLE IF NOT EXISTS user (
+    user_code VARCHAR(50) PRIMARY KEY,
+    password VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    academy_id INT,
+    com_id INT,
+    role INT DEFAULT 0
+);
