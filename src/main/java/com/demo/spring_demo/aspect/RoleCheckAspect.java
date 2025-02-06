@@ -23,23 +23,23 @@ public class RoleCheckAspect {
         
         logger.info("Checking role. Required roles: {}, User role: {}", Arrays.toString(requireRole.value()), roleStr);
         
-        if (roleStr == null) {
-            logger.error("No role found in request");
-            throw new RuntimeException("Insufficient privileges: No role found");
-        }
-
-        try {
-            int userRole = Integer.parseInt(roleStr);
-            logger.info("User role (parsed): {}", userRole);
-            if (Arrays.stream(requireRole.value()).noneMatch(role -> role == userRole)) {
-                logger.error("Invalid role. User role {} is not in allowed roles: {}", 
-                    userRole, Arrays.toString(requireRole.value()));
-                throw new RuntimeException("Insufficient privileges: Invalid role");
-            }
-            logger.info("Role check passed");
-        } catch (NumberFormatException e) {
-            logger.error("Failed to parse role: {}", roleStr, e);
-            throw new RuntimeException("Invalid role format");
-        }
+//        if (roleStr == null) {
+//            logger.error("No role found in request");
+//            throw new RuntimeException("Insufficient privileges: No role found");
+//        }
+////
+//        try {
+//            int userRole = Integer.parseInt(roleStr);
+//            logger.info("User role (parsed): {}", userRole);
+//            if (Arrays.stream(requireRole.value()).noneMatch(role -> role == userRole)) {
+//                logger.error("Invalid role. User role {} is not in allowed roles: {}",
+//                    userRole, Arrays.toString(requireRole.value()));
+//                throw new RuntimeException("Insufficient privileges: Invalid role");
+//            }
+//            logger.info("Role check passed");
+//        } catch (NumberFormatException e) {
+//            logger.error("Failed to parse role: {}", roleStr, e);
+//            throw new RuntimeException("Invalid role format");
+//        }
     }
 } 

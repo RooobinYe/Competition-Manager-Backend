@@ -36,4 +36,12 @@ public interface CaptainService {
      * @return 团队列表
      */
     ApiResponse<List<TeamDTO>> getTeamList();
+
+    /**
+     * 删除团队成员
+     * @param teamId 团队ID
+     * @param memberId 成员ID
+     * @return 是否删除成功
+     */
+    ApiResponse<Object> deleteTeamMember(Integer teamId, Integer memberId);
 }

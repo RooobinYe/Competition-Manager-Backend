@@ -1,8 +1,10 @@
 package com.demo.spring_demo.controller;
 
+import com.demo.spring_demo.annotation.RequireRole;
 import com.demo.spring_demo.model.ApiResponse;
 import com.demo.spring_demo.model.dto.captain.TeamDTO;
 import com.demo.spring_demo.model.dto.captain.GetMemberDTO;
+import com.demo.spring_demo.model.dto.captain.DeleteMemberDTO;
 import com.demo.spring_demo.service.CaptainService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/captain")
+@RequireRole({0, 1, 2, 3})
 public class CaptainController {
 
     @Autowired
@@ -35,5 +38,10 @@ public class CaptainController {
     @GetMapping("/team")
     public ApiResponse<List<TeamDTO>> getTeamList() {
         return captainService.getTeamList();
+    }
+
+    @DeleteMapping("/team/{teamId}/member")
+    public ApiResponse<Object> deleteTeamMember(@PathVariable Integer teamId, @RequestBody DeleteMemberDTO dto) {
+        return captainService.deleteTeamMember(teamId, dto.getId());
     }
 }

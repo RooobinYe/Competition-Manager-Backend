@@ -17,6 +17,8 @@ import com.demo.spring_demo.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -191,39 +193,62 @@ public class CaptainServiceImpl implements CaptainService {
     @Transactional
     public ApiResponse<List<TeamDTO>> getTeamList() {
         List<Team> teams = teamMapper.selectList(null);
-        
+
         List<TeamDTO> teamDTOs = teams.stream()
-            .map(team -> {
-                TeamDTO teamDTO = new TeamDTO();
-                teamDTO.setId(team.getId());
-                teamDTO.setComId(team.getComId());
-                teamDTO.setName(team.getName());
-                teamDTO.setCaptainId(team.getCaptainId());
-                teamDTO.setCaptainName(team.getCaptainName());
-                teamDTO.setStatus(team.getStatus());
-                teamDTO.setMemberNames(team.getMemberNames());
-                teamDTO.setInstructorNames(team.getInstructorNames());
-                return teamDTO;
-            })
-            .collect(Collectors.toList());
-            /**
-             * 上方是使用流式的方式 等价于
-             * List<TeamDTO> teamDTOs = new ArrayList<>();
-             * for (Team team : teams) {
-             *     TeamDTO dto = new TeamDTO();
-             *     dto.setId(team.getId());
-             *     dto.setComId(team.getComId());
-             *     dto.setName(team.getName());
-             *     dto.setCaptainId(team.getCaptainId());
-             *     dto.setCaptainName(team.getCaptainName());
-             *     dto.setStatus(team.getStatus());
-             *     dto.setMemberNames(team.getMemberNames());
-             *     dto.setInstructorNames(team.getInstructorNames());
-             *     teamDTOs.add(dto);
-             * }
-             */
-            
+                .map(team -> {
+                    TeamDTO teamDTO = new TeamDTO();
+                    teamDTO.setId(team.getId());
+                    teamDTO.setComId(team.getComId());
+                    teamDTO.setName(team.getName());
+                    teamDTO.setCaptainId(team.getCaptainId());
+                    teamDTO.setCaptainName(team.getCaptainName());
+                    teamDTO.setStatus(team.getStatus());
+                    teamDTO.setMemberNames(team.getMemberNames());
+                    teamDTO.setInstructorNames(team.getInstructorNames());
+                    return teamDTO;
+                })
+                .collect(Collectors.toList());
+        /**
+         * 上方是使用流式的方式 等价于
+         * List<TeamDTO> teamDTOs = new ArrayList<>();
+         * for (Team team : teams) {
+         *     TeamDTO dto = new TeamDTO();
+         *     dto.setId(team.getId());
+         *     dto.setComId(team.getComId());
+         *     dto.setName(team.getName());
+         *     dto.setCaptainId(team.getCaptainId());
+         *     dto.setCaptainName(team.getCaptainName());
+         *     dto.setStatus(team.getStatus());
+         *     dto.setMemberNames(team.getMemberNames());
+         *     dto.setInstructorNames(team.getInstructorNames());
+         *     teamDTOs.add(dto);
+         * }
+         */
+
         return ApiResponse.success(teamDTOs);
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse<Object> deleteTeamMember(Integer teamId, Integer memberId) {
+        LambdaQueryWrapper<Member> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Member::getTeamId, teamId)
+                .eq(Member::getId, memberId);
+        memberMapper.delete(wrapper);
+
+        LambdaQueryWrapper<Member> memberQueryWrapper = new LambdaQueryWrapper<>();
+        memberQueryWrapper.eq(Member::getTeamId, teamId);
+        List<Member> members = memberMapper.selectList(memberQueryWrapper);
+        String memberNames = members.stream()
+                .map(Member::getName)
+                .collect(Collectors.joining(", "));
+
+        LambdaUpdateWrapper<Team> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Team::getId, teamId)
+                .set(Team::getMemberNames, memberNames);
+        teamMapper.update(null, updateWrapper);
+
+        return ApiResponse.success(Collections.emptyMap());
     }
 } 
 
