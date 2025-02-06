@@ -55,17 +55,28 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-<!--        &lt;!&ndash; https://jsqlparser.github.io/JSqlParser/usage.html#build-dependencies &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.github.jsqlparser</groupId>-->
-<!--            <artifactId>jsqlparser</artifactId>-->
-<!--            <version>5.1</version>-->
-<!--        </dependency>-->
+        <!-- https://jsqlparser.github.io/JSqlParser/usage.html#build-dependencies -->
+        <!-- <dependency>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
+            <version>5.1</version>
+        </dependency> -->
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter-test</artifactId>
             <version>3.0.4</version>
             <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.auth0/java-jwt -->
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>4.5.0</version>
+        </dependency>
+        <!-- Add AspectJ support -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
     </dependencies>
 
