@@ -1,9 +1,8 @@
 package com.demo.spring_demo.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import java.time.LocalDateTime;
+import lombok.Data;
 
 @JsonPropertyOrder({
         "success",
@@ -11,6 +10,7 @@ import java.time.LocalDateTime;
         "errMsg",
         "data"
 })
+@Data
 public class ApiResponse<T> {
     private boolean success;
     private int errCode;
@@ -33,38 +33,5 @@ public class ApiResponse<T> {
         response.setErrMsg(errMsg);
         response.setData(null);
         return response;
-    }
-
-    // Getters and Setters
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
-
-    public int getErrCode() {
-        return errCode;
-    }
-
-    public void setErrCode(int errCode) {
-        this.errCode = errCode;
-    }
-
-    public String getErrMsg() {
-        return errMsg;
-    }
-
-    public void setErrMsg(String errMsg) {
-        this.errMsg = errMsg;
-    }
-
-    public T getData() {
-        return data;
-    }
-
-    public void setData(T data) {
-        this.data = data;
     }
 }

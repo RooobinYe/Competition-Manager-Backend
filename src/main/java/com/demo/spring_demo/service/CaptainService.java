@@ -44,4 +44,12 @@ public interface CaptainService {
      * @return 是否删除成功
      */
     ApiResponse<Object> deleteTeamMember(Integer teamId, Integer memberId);
+
+    /**
+     * 更新团队成员
+     * @param teamId 团队ID
+     * @param member 成员信息
+     * @return 是否更新成功
+     */
+    ApiResponse<Object> updateTeamMember(Integer teamId, Member member);
 }

@@ -105,17 +105,17 @@ public class CaptainServiceImpl implements CaptainService {
             }
         }
 
-        LambdaQueryWrapper<Member> memberQueryWrapper = new LambdaQueryWrapper<>();
-        memberQueryWrapper.eq(Member::getTeamId, team.getId());
-        List<Member> members = memberMapper.selectList(memberQueryWrapper);
+        LambdaQueryWrapper<Member> memberWrapper = new LambdaQueryWrapper<>();
+        memberWrapper.eq(Member::getTeamId, team.getId());
+        List<Member> members = memberMapper.selectList(memberWrapper);
         String memberNames = members.stream()
             .map(Member::getName)
             .collect(Collectors.joining(", "));
         
-        LambdaUpdateWrapper<Team> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(Team::getId, team.getId())
+        LambdaUpdateWrapper<Team> teamWrapper = new LambdaUpdateWrapper<>();
+        teamWrapper.eq(Team::getId, team.getId())
                     .set(Team::getMemberNames, memberNames);
-        teamMapper.update(null, updateWrapper);
+        teamMapper.update(null, teamWrapper);
 
         TeamDTO teamDTO = new TeamDTO();
         teamDTO.setId(team.getId());
@@ -138,9 +138,9 @@ public class CaptainServiceImpl implements CaptainService {
             throw BusinessException.teamNotFound(teamId);
         }
 
-        LambdaQueryWrapper<Member> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Member::getTeamId, teamId);
-        List<Member> members = memberMapper.selectList(wrapper);
+        LambdaQueryWrapper<Member> memberWrapper = new LambdaQueryWrapper<>();
+        memberWrapper.eq(Member::getTeamId, teamId);
+        List<Member> members = memberMapper.selectList(memberWrapper);
         
         if (members.isEmpty()) {
             return ApiResponse.error(404, "No members found for team");
@@ -174,17 +174,17 @@ public class CaptainServiceImpl implements CaptainService {
             throw new BusinessException(ErrorCode.MEMBER_CREATE_FAILED);
         }
 
-        LambdaQueryWrapper<Member> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Member::getTeamId, teamId);
-        List<Member> members = memberMapper.selectList(wrapper);
+        LambdaQueryWrapper<Member> memberWrapper = new LambdaQueryWrapper<>();
+        memberWrapper.eq(Member::getTeamId, teamId);
+        List<Member> members = memberMapper.selectList(memberWrapper);
         String memberNames = members.stream()
                 .map(Member::getName)
                 .collect(Collectors.joining(", "));
 
-        LambdaUpdateWrapper<Team> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(Team::getId, teamId)
+        LambdaUpdateWrapper<Team> teamWrapper = new LambdaUpdateWrapper<>();
+        teamWrapper.eq(Team::getId, teamId)
                 .set(Team::getMemberNames, memberNames);
-        teamMapper.update(null, updateWrapper);
+        teamMapper.update(null, teamWrapper);
 
         return ApiResponse.success(null);
     }
@@ -231,22 +231,44 @@ public class CaptainServiceImpl implements CaptainService {
     @Override
     @Transactional
     public ApiResponse<Object> deleteTeamMember(Integer teamId, Integer memberId) {
-        LambdaQueryWrapper<Member> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Member::getTeamId, teamId)
+        LambdaQueryWrapper<Member> memberWrapper = new LambdaQueryWrapper<>();
+        memberWrapper.eq(Member::getTeamId, teamId)
                 .eq(Member::getId, memberId);
-        memberMapper.delete(wrapper);
+        memberMapper.delete(memberWrapper);
 
-        LambdaQueryWrapper<Member> memberQueryWrapper = new LambdaQueryWrapper<>();
-        memberQueryWrapper.eq(Member::getTeamId, teamId);
-        List<Member> members = memberMapper.selectList(memberQueryWrapper);
+        memberWrapper = new LambdaQueryWrapper<>();
+        memberWrapper.eq(Member::getTeamId, teamId);
+        List<Member> members = memberMapper.selectList(memberWrapper);
         String memberNames = members.stream()
                 .map(Member::getName)
                 .collect(Collectors.joining(", "));
 
-        LambdaUpdateWrapper<Team> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(Team::getId, teamId)
+        LambdaUpdateWrapper<Team> teamWrapper = new LambdaUpdateWrapper<>();
+        teamWrapper.eq(Team::getId, teamId)
                 .set(Team::getMemberNames, memberNames);
-        teamMapper.update(null, updateWrapper);
+        teamMapper.update(null, teamWrapper);
+
+        return ApiResponse.success(Collections.emptyMap());
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse<Object> updateTeamMember(Integer teamId, Member member) {
+        LambdaQueryWrapper<Member> memberWrapper = new LambdaQueryWrapper<>();
+        memberWrapper.eq(Member::getTeamId, teamId)
+                .eq(Member::getId, member.getId());
+        memberMapper.update(member, memberWrapper);
+
+        memberWrapper = new LambdaQueryWrapper<>();
+        memberWrapper.eq(Member::getTeamId, teamId);
+        String memberNames = memberMapper.selectList(memberWrapper).stream()
+                .map(Member::getName)
+                .collect(Collectors.joining(", "));
+
+        LambdaUpdateWrapper<Team> teamWrapper = new LambdaUpdateWrapper<>();
+        teamWrapper.eq(Team::getId, teamId)
+                .set(Team::getMemberNames, memberNames);
+        teamMapper.update(null, teamWrapper);
 
         return ApiResponse.success(Collections.emptyMap());
     }

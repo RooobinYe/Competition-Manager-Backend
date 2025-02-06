@@ -44,4 +44,9 @@ public class CaptainController {
     public ApiResponse<Object> deleteTeamMember(@PathVariable Integer teamId, @RequestBody DeleteMemberDTO dto) {
         return captainService.deleteTeamMember(teamId, dto.getId());
     }
+
+    @PatchMapping("/team/{teamId}/member")
+    public ApiResponse<Object> updateTeamMember(@PathVariable Integer teamId, @RequestBody Member member) {
+        return captainService.updateTeamMember(teamId, member);
+    }
 }
