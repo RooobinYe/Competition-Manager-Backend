@@ -1,3 +1,5 @@
+SET time_zone = '+00:00';
+
 CREATE TABLE IF NOT EXISTS team (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
@@ -5,7 +7,7 @@ CREATE TABLE IF NOT EXISTS team (
     captain_id INT,
     captain_name VARCHAR(255),
     status INT DEFAULT 0,
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    create_time DATETIME DEFAULT UTC_TIMESTAMP,
     member_names TEXT,
     instructor_names TEXT
 );
@@ -39,4 +41,18 @@ CREATE TABLE IF NOT EXISTS user (
     academy_id INT,
     com_id INT,
     role INT DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS competition (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    min_team_members INT,
+    max_team_members INT,
+    work_code VARCHAR(50) NOT NULL,
+    start_time DATETIME,
+    end_time DATETIME,
+    review_begin_time DATETIME,
+    review_end_time DATETIME,
+    create_time DATETIME DEFAULT UTC_TIMESTAMP
 );
