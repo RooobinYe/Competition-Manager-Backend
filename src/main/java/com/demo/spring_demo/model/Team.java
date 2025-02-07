@@ -3,7 +3,9 @@ package com.demo.spring_demo.model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.Data;
 
+@Data
 public class Team implements Serializable {
     private Long id;
     private Long comId;
