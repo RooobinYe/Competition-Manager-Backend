@@ -16,7 +16,7 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // 从请求头中获取token
+        // 从请求头中获取 token
         String token = request.getHeader("Authorization");
         
         if (request.getRequestURI().contains("/login")) {
@@ -35,10 +35,9 @@ public class JwtInterceptor implements HandlerInterceptor {
                 token = token.substring(7);
             }
             
-            // 验证token
             jwtUtils.verifyToken(token);
             
-            // 将用户信息存入request，方便后续使用
+            // 将用户信息存入 request，方便后续使用
             request.setAttribute("userId", jwtUtils.getUserIdFromToken(token));
             request.setAttribute("role", jwtUtils.getRoleFromToken(token));
             
