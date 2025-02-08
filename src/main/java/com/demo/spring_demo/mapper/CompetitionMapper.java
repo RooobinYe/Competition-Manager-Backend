@@ -16,9 +16,8 @@ public interface CompetitionMapper extends BaseMapper<Competition> {
      * @param userCode 用户编号
      * @return 比赛列表
      */
-    @Select("SELECT DISTINCT c.* FROM competition c " +
-            "INNER JOIN team_competition tc ON c.id = tc.competition_id " +
-            "INNER JOIN team_member tm ON tc.team_id = tm.team_id " +
-            "WHERE tm.user_code = #{userCode}")
+    @Select("SELECT c.* FROM competition c " +
+            "INNER JOIN user u ON c.id = u.com_id " +
+            "WHERE u.user_code = #{userCode}")
     List<Competition> selectUserCompetitions(String userCode);
 }

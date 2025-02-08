@@ -17,6 +17,6 @@ public class AcademyServiceImpl implements AcademyService {
 
     @Override
     public List<Team> getTeam(String academyId) {
-        return academyMapper.findByAcademyId(academyId);
+        return academyMapper.selectList(null);
     }
 }

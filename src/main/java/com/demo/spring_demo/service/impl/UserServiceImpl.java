@@ -1,5 +1,6 @@
 package com.demo.spring_demo.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.demo.spring_demo.mapper.UserMapper;
 import com.demo.spring_demo.model.ApiResponse;
 import com.demo.spring_demo.model.User;
@@ -33,7 +34,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public ApiResponse<LoginResponse> login(LoginRequest loginRequest) {
         // 1. 查询用户
-        User user = userMapper.findByUserCode(loginRequest.getUserCode());
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getUserCode, loginRequest.getUserCode());
+        User user = userMapper.selectOne(queryWrapper);
+        
         if (user == null) {
             return ApiResponse.error(401, "用户不存在");
         }
