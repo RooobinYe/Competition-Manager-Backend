@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import javax.sql.DataSource;
 
 @Service
 public class DatabaseInitService implements CommandLineRunner {
@@ -24,7 +25,11 @@ public class DatabaseInitService implements CommandLineRunner {
             
             // 执行schema.sql文件中的建表语句
             ResourceDatabasePopulator resourceDatabasePopulator = new ResourceDatabasePopulator(false, false, "UTF-8", new ClassPathResource("db/schema.sql"));
-            resourceDatabasePopulator.execute(jdbcTemplate.getDataSource());
+            DataSource dataSource = jdbcTemplate.getDataSource();
+            if (dataSource == null) {
+                throw new IllegalStateException("DataSource must not be null");
+            }
+            resourceDatabasePopulator.execute(dataSource);
             
             logger.info("Database tables initialized successfully");
         } catch (Exception e) {

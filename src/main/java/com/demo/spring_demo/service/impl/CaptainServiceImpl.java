@@ -112,9 +112,17 @@ public class CaptainServiceImpl implements CaptainService {
             .map(Member::getName)
             .collect(Collectors.joining(", "));
         
+        LambdaQueryWrapper<Instructor> instructorWrapper = new LambdaQueryWrapper<>();
+        instructorWrapper.eq(Instructor::getTeamId, team.getId().longValue());
+        List<Instructor> instructors = instructorMapper.selectList(instructorWrapper);
+        String instructorNames = instructors.stream()
+            .map(Instructor::getName)
+            .collect(Collectors.joining(", "));
+        
         LambdaUpdateWrapper<Team> teamWrapper = new LambdaUpdateWrapper<>();
         teamWrapper.eq(Team::getId, team.getId())
-                    .set(Team::getMemberNames, memberNames);
+                    .set(Team::getMemberNames, memberNames)
+                    .set(Team::getInstructorNames, instructorNames);
         teamMapper.update(null, teamWrapper);
 
         TeamDTO teamDTO = new TeamDTO();
@@ -125,7 +133,7 @@ public class CaptainServiceImpl implements CaptainService {
         teamDTO.setCaptainName(team.getCaptainName());
         teamDTO.setStatus(team.getStatus());
         teamDTO.setMemberNames(memberNames);
-        teamDTO.setInstructorNames(team.getInstructorNames());
+        teamDTO.setInstructorNames(instructorNames);
 
         return ApiResponse.success(teamDTO);
     }
@@ -161,7 +169,7 @@ public class CaptainServiceImpl implements CaptainService {
 
     @Override
     @Transactional
-    public ApiResponse<Void> addTeamMember(Integer teamId, Member member) {
+    public ApiResponse<Object> addTeamMember(Integer teamId, Member member) {
         Team team = teamMapper.selectById(teamId);
         if (team == null) {
             throw BusinessException.teamNotFound(teamId);
@@ -186,7 +194,7 @@ public class CaptainServiceImpl implements CaptainService {
                 .set(Team::getMemberNames, memberNames);
         teamMapper.update(null, teamWrapper);
 
-        return ApiResponse.success(null);
+        return ApiResponse.success(Collections.emptyMap());
     }
     
     @Override

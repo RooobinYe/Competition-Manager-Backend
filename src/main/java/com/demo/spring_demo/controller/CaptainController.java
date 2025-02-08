@@ -31,7 +31,7 @@ public class CaptainController {
     }
 
     @PostMapping("/team/{teamId}/member")
-    public ApiResponse<Void> addTeamMember(@PathVariable Integer teamId, @RequestBody Member member) {
+    public ApiResponse<Object> addTeamMember(@PathVariable Integer teamId, @RequestBody Member member) {
         return captainService.addTeamMember(teamId, member);
     }
 

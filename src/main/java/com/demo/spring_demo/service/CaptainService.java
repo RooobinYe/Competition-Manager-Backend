@@ -29,7 +29,7 @@ public interface CaptainService {
      * @param member 成员信息
      * @return 是否添加成功
      */
-    ApiResponse<Void> addTeamMember(Integer teamId, Member member);
+    ApiResponse<Object> addTeamMember(Integer teamId, Member member);
 
     /**
      * 获取团队列表
