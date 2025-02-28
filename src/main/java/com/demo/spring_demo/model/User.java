@@ -1,12 +1,15 @@
 package com.demo.spring_demo.model;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.IdType;
 
 import lombok.Data;
 
 @Data
 @TableName("user")
 public class User {
+    @TableId(value = "user_code", type = IdType.INPUT)
     private String userCode;
     private String password;
     private String name;

@@ -6,6 +6,9 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,9 +16,28 @@ import java.util.Map;
 @Component
 public class JwtUtils {
 
-    private static final String SECRET = "your-secret-key";
+    private static final String JWT_SECRET_FILE = "jwt_secret.txt";
+    private static final String DEFAULT_SECRET = "secret-key"; // 仅作为文件不存在时的后备选项
     // token duration (ms)
     private static final long EXPIRATION = 24*60*60*1000; // One day
+    
+    private String getSecret() {
+        try {
+            // 简单地从文件读取密钥
+            try (BufferedReader reader = new BufferedReader(new FileReader(JWT_SECRET_FILE))) {
+                String secret = reader.readLine();
+                if (secret != null && !secret.isEmpty()) {
+                    System.out.println("Using secret from file: " + secret);
+                    return secret;
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error reading JWT secret file: " + e.getMessage());
+        }
+        // 文件不存在或读取失败时使用默认密钥
+        System.out.println("Using default secret: " + DEFAULT_SECRET);
+        return DEFAULT_SECRET;
+    }
 
     /**
      * Generate a token
@@ -35,7 +57,7 @@ public class JwtUtils {
                 .withClaim("role", role)
                 .withIssuedAt(now)
                 .withExpiresAt(expiration)
-                .sign(Algorithm.HMAC256(SECRET));
+                .sign(Algorithm.HMAC256(getSecret()));
     }
 
     /**
@@ -44,7 +66,7 @@ public class JwtUtils {
      * @return decoded JWT
      */
     public DecodedJWT verifyToken(String token) {
-        JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET)).build();
+        JWTVerifier verifier = JWT.require(Algorithm.HMAC256(getSecret())).build();
         return verifier.verify(token);
     }
 
