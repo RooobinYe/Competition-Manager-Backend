@@ -8,6 +8,7 @@ import com.demo.spring_demo.service.UserService;
 import com.demo.spring_demo.model.dto.LoginRequest;
 import com.demo.spring_demo.model.dto.LoginResponse;
 import com.demo.spring_demo.utils.JwtUtils;
+import com.demo.spring_demo.utils.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +21,15 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private JwtUtils jwtUtils;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
     public ApiResponse<Object> addUser(User user) {
+        // 对密码进行加密存储
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         int result = userMapper.insert(user);
         if (result == 1) {
             return ApiResponse.success(Collections.emptyMap());
@@ -42,8 +48,8 @@ public class UserServiceImpl implements UserService {
             return ApiResponse.error(401, "用户不存在");
         }
 
-        // 2. 验证密码
-        if (!user.getPassword().equals(loginRequest.getPassword())) {
+        // 2. 验证密码 - 使用安全的密码比较
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             return ApiResponse.error(401, "密码错误");
         }
 
