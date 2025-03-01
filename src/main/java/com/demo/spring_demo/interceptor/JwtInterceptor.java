@@ -44,7 +44,7 @@ public class JwtInterceptor implements HandlerInterceptor {
             return true;
         } catch (JWTVerificationException e) {
             response.setStatus(401);
-            response.getWriter().write("Unauthorized: Invalid token"); // TODO 采用统一的相应文件
+            response.getWriter().write("Unauthorized: Invalid token"); // TODO 采用统一的 response 模板
             return false;
         }
     }

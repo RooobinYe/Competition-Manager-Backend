@@ -20,13 +20,19 @@ dto 的结构如下：
 2. 二级管理员（老师）操作 User 表 分配 role->0(Captain)
 3. Captain 登录系统 并且创建队伍 此时操作 Member 表
 
-### JWT
-
 ### DTO
 
 // TODO
 使用 V2 的接口，使用了 Java 14+ 引入的 Record 特性，这使得它们都是不可变的数据传输对象，自动生成了构造器、getter、equals、hashCode 和 toString 方法。
 src/main/java/fun/sast/evento/lark/api/value/V2.java
+
+### 使用一个简单的 redis 缓存
+
+cachecontroller 有什么用？
+
+### 开一个 dev 分支 在 dev 分支上进行开发
+
+改成 lark 的格式 AOP 架构
 
 ## 改进建议
 

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import lombok.Data;
 
+import java.util.Collections;
+
 @JsonPropertyOrder({
         "success",
         "errCode",
@@ -31,7 +33,7 @@ public class ApiResponse<T> {
         response.setSuccess(false);
         response.setErrCode(errCode);
         response.setErrMsg(errMsg);
-        response.setData(null);
+        response.setData((T) Collections.emptyMap());
         return response;
     }
 }

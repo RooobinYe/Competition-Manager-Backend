@@ -24,7 +24,6 @@ public class AdminServiceImpl implements AdminService {
         competition.setDescription(competitionDTO.getDescription());
         competition.setMinTeamMembers(competitionDTO.getMinTeamMembers());
         competition.setMaxTeamMembers(competitionDTO.getMaxTeamMembers());
-        // TODO: 设置活动负责人学工号
         // competition.setWorkCode(competitionDTO.getWorkCode());
         competition.setWorkCode("TEMP_NUMBERS");
         competition.setStartTime(competitionDTO.getStartTime());
