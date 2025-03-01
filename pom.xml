@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.demo</groupId>
-    <artifactId>spring_demo</artifactId>
+    <artifactId>Competition-Manager-Backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>spring_demo</name>
-    <description>spring_demo</description>
+    <name>CompetitionManagerBackend</name>
+    <description>CompetitionManagerBackend</description>
     <url/>
     <licenses>
         <license/>
