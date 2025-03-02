@@ -3,6 +3,7 @@ package com.demo.competition_manager_backend.controller;
 import com.demo.competition_manager_backend.model.ApiResponse;
 import com.demo.competition_manager_backend.utils.RedisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -69,6 +70,23 @@ public class CacheController {
         Map<String, Object> data = new HashMap<>();
         data.put("key", key);
         data.put("exists", exists);
+        return ApiResponse.success(data);
+    }
+    
+    /**
+     * 清除所有注解缓存
+     */
+    @DeleteMapping("/clear-all")
+    @CacheEvict(value = {
+        "academyCache", 
+        "userCache", 
+        "competitionCache", 
+        "captainCache", 
+        "teamCache"
+    }, allEntries = true)
+    public ApiResponse<Object> clearAllCaches() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("message", "所有缓存已清除");
         return ApiResponse.success(data);
     }
 } 

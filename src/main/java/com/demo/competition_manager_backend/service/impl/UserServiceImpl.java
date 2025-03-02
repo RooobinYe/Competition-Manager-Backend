@@ -9,7 +9,6 @@ import com.demo.competition_manager_backend.model.dto.LoginRequest;
 import com.demo.competition_manager_backend.model.dto.LoginResponse;
 import com.demo.competition_manager_backend.utils.JwtUtils;
 import com.demo.competition_manager_backend.utils.PasswordEncoder;
-import com.demo.competition_manager_backend.utils.RedisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -27,11 +26,6 @@ public class UserServiceImpl implements UserService {
     
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
-    @Autowired
-    private RedisUtils redisUtils;
-
-    private static final String USER_CACHE_KEY = "user:";
 
     @Override
     @Transactional
@@ -49,32 +43,22 @@ public class UserServiceImpl implements UserService {
     @Override
     @Cacheable(value = "userCache", key = "#loginRequest.userCode", unless = "#result.errCode != 0") // 只有在成功登录时才缓存
     public ApiResponse<LoginResponse> login(LoginRequest loginRequest) {
-        // 先尝试从Redis缓存获取用户信息
-        String userCacheKey = USER_CACHE_KEY + loginRequest.getUserCode();
-        User cachedUser = redisUtils.get(userCacheKey, User.class);
+        // 1. 查询用户
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getUserCode, loginRequest.getUserCode());
+        User user = userMapper.selectOne(queryWrapper);
         
-        if (cachedUser == null) {
-            // 1. 查询用户
-            LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(User::getUserCode, loginRequest.getUserCode());
-            User user = userMapper.selectOne(queryWrapper);
-            
-            if (user == null) {
-                return ApiResponse.error(401, "用户不存在");
-            }
-            
-            // 将用户信息存入Redis缓存，有效期30分钟
-            redisUtils.set(userCacheKey, user, 1800);
-            cachedUser = user;
+        if (user == null) {
+            return ApiResponse.error(401, "用户不存在");
         }
 
         // 2. 验证密码 - 使用安全的密码比较
-        if (!passwordEncoder.matches(loginRequest.getPassword(), cachedUser.getPassword())) {
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             return ApiResponse.error(401, "密码错误");
         }
 
         // 3. 生成token
-        String token = jwtUtils.generateToken(cachedUser.getUserCode(), String.valueOf(cachedUser.getRole()));
+        String token = jwtUtils.generateToken(user.getUserCode(), String.valueOf(user.getRole()));
 
         // 4. 构建响应
         LoginResponse response = new LoginResponse();

@@ -15,6 +15,8 @@ import com.demo.competition_manager_backend.service.CaptainService;
 import com.demo.competition_manager_backend.exception.BusinessException;
 import com.demo.competition_manager_backend.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +38,7 @@ public class CaptainServiceImpl implements CaptainService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"captainCache", "teamCache"}, allEntries = true)
     public ApiResponse<TeamDTO> updateTeamInfo(Team team) {
         Team existingTeam = teamMapper.selectById(team.getId());
         boolean isNewTeam = existingTeam == null;
@@ -140,6 +143,7 @@ public class CaptainServiceImpl implements CaptainService {
 
     @Override
     @Transactional
+    @Cacheable(value = "captainCache", key = "'team_members:' + #teamId")
     public ApiResponse<List<GetMemberDTO>> getTeamMembers(Integer teamId) {
         Team team = teamMapper.selectById(teamId);
         if (team == null) {
@@ -169,6 +173,7 @@ public class CaptainServiceImpl implements CaptainService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"captainCache", "teamCache"}, key = "'team_members:' + #teamId")
     public ApiResponse<Object> addTeamMember(Integer teamId, Member member) {
         Team team = teamMapper.selectById(teamId);
         if (team == null) {
@@ -199,6 +204,7 @@ public class CaptainServiceImpl implements CaptainService {
     
     @Override
     @Transactional
+    @Cacheable(value = "teamCache", key = "'team_list'")
     public ApiResponse<List<TeamDTO>> getTeamList() {
         List<Team> teams = teamMapper.selectList(null);
 
@@ -216,28 +222,13 @@ public class CaptainServiceImpl implements CaptainService {
                     return teamDTO;
                 })
                 .collect(Collectors.toList());
-        /**
-         * 上方是使用流式的方式 等价于
-         * List<TeamDTO> teamDTOs = new ArrayList<>();
-         * for (Team team : teams) {
-         *     TeamDTO dto = new TeamDTO();
-         *     dto.setId(team.getId());
-         *     dto.setComId(team.getComId());
-         *     dto.setName(team.getName());
-         *     dto.setCaptainId(team.getCaptainId());
-         *     dto.setCaptainName(team.getCaptainName());
-         *     dto.setStatus(team.getStatus());
-         *     dto.setMemberNames(team.getMemberNames());
-         *     dto.setInstructorNames(team.getInstructorNames());
-         *     teamDTOs.add(dto);
-         * }
-         */
-
+        
         return ApiResponse.success(teamDTOs);
     }
 
     @Override
     @Transactional
+    @CacheEvict(value = {"captainCache", "teamCache"}, key = "'team_members:' + #teamId")
     public ApiResponse<Object> deleteTeamMember(Integer teamId, Integer memberId) {
         LambdaQueryWrapper<Member> memberWrapper = new LambdaQueryWrapper<>();
         memberWrapper.eq(Member::getTeamId, teamId)
@@ -261,6 +252,7 @@ public class CaptainServiceImpl implements CaptainService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"captainCache", "teamCache"}, key = "'team_members:' + #teamId")
     public ApiResponse<Object> updateTeamMember(Integer teamId, Member member) {
         LambdaQueryWrapper<Member> memberWrapper = new LambdaQueryWrapper<>();
         memberWrapper.eq(Member::getTeamId, teamId)

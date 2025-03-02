@@ -94,6 +94,11 @@
             <artifactId>redisson-spring-boot-starter</artifactId>
             <version>3.45.0</version>
         </dependency>
+        <!-- 添加Java 8日期时间支持的Jackson模块 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
