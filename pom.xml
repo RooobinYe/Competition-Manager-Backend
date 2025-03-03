@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.demo</groupId>
-    <artifactId>Competition-Manager-Backend</artifactId>
+    <artifactId>sast-approval</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>CompetitionManagerBackend</name>
-    <description>CompetitionManagerBackend</description>
+    <name>SAST-Approval</name>
+    <description>SAST-Approval</description>
     <url/>
     <licenses>
         <license/>
